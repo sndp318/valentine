@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>For You</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #FFF0F5;
+            /* Lavender Blush - fallback */
+            --text-color: #FFFFFF;
+            /* Changed to white for better contrast on photos */
+            --accent-color: #D32F2F;
+            --btn-bg: #E57373;
+            --btn-text: #FFFFFF;
+            --transition-duration: 0.8s;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body,
+        html {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            /* Prevent scrolling */
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        /* Typography */
+        h1,
+        h2 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+            color: #FFFFFF;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+        }
+
+        h2 {
+            font-size: 2rem;
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            font-weight: 300;
+            color: #FAFAFA;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtext {
+            font-style: italic;
+            font-size: 1.2rem;
+            color: #F0F0F0;
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Container */
+        .app-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Sections */
+        .section {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity var(--transition-duration) ease-out, transform var(--transition-duration) ease-out;
+            pointer-events: none;
+            /* Prevent clicking when hidden */
+            z-index: 1;
+
+            /* Background Image Properties */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* Dark Overlay for Readability */
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            /* 40% dark overlay */
+            z-index: -1;
+        }
+
+        /* Specific Backgrounds - User should rename their photos to match these */
+        #section-1 {
+            background-image: url('photo1.jpg');
+        }
+
+        #section-2 {
+            background-image: url('photo2.jpg');
+        }
+
+        #section-3 {
+            background-image: url('photo3.jpg');
+        }
+
+        #section-4 {
+            background-image: url('photo4.jpg');
+        }
+
+        #section-5 {
+            background-image: url('photo5.jpg');
+        }
+
+        .section.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+            z-index: 2;
+        }
+
+        .section.exiting {
+            opacity: 0;
+            transform: translateY(-20px);
+            pointer-events: none;
+        }
+
+        /* Buttons */
+        .btn-container {
+            margin-top: 3rem;
+        }
+
+        button {
+            background-color: transparent;
+            border: 2px solid var(--btn-bg);
+            color: var(--btn-bg);
+            padding: 12px 32px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            transition: all 0.3s ease;
+            outline: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background-color: var(--btn-bg);
+            color: var(--btn-text);
+            transform: scale(1.05);
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            color: white;
+            font-size: 1.2rem;
+            padding: 16px 48px;
+            box-shadow: 0 4px 15px rgba(211, 47, 47, 0.3);
+        }
+
+        .btn-primary:hover {
+            background-color: #B71C1C;
+            border-color: #B71C1C;
+            transform: scale(1.1);
+        }
+
+        /* Hearts/Confetti Container */
+        #confetti-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Final Message Reveal */
+        .final-message {
+            margin-top: 2rem;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 1s ease 0.5s;
+        }
+
+        .final-message.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Floating hearts background animation for extra ambiance (optional but nice) */
+        .bg-heart {
+            position: absolute;
+            color: rgba(255, 182, 193, 0.3);
+            font-size: 2rem;
+            animation: floatUp 15s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(110vh) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.5;
+            }
+
+            90% {
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: translateY(-10vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container">
+        <!-- Floating Background Hearts -->
+        <div id="bg-hearts"></div>
+
+        <canvas id="confetti-canvas"></canvas>
+
+        <!-- Section 1 -->
+        <section class="section active" id="section-1">
+            <div class="content">
+                <h1>Before I ask you something…</h1>
+                <p>I want to remember a few things.</p>
+                <div class="btn-container">
+                    <button onclick="nextSection(1)">Next</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2 -->
+        <section class="section" id="section-2">
+            <div class="content">
+                <h2>The day we met</h2>
+                <p class="subtext">“I had no idea how much you were about to change my life.”</p>
+                <div class="btn-container">
+                    <button onclick="nextSection(2)">Next</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3 -->
+        <section class="section" id="section-3">
+            <div class="content">
+                <h2>The moment I knew</h2>
+                <p class="subtext">“Somewhere between the laughs and the silence.”</p>
+                <div class="btn-container">
+                    <button onclick="nextSection(3)">Next</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4 -->
+        <section class="section" id="section-4">
+            <div class="content">
+                <h2>What I still love the most</h2>
+                <p class="subtext">“You. Exactly as you are.”</p>
+                <div class="btn-container">
+                    <button onclick="nextSection(4)">Next</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5 -->
+        <section class="section" id="section-5">
+            <div class="content">
+                <h1>Will you be my Valentine?</h1>
+                <div class="btn-container">
+                    <button class="btn-primary" onclick="celebrate()">Yes ❤️</button>
+                </div>
+                <div class="final-message" id="final-msg">
+                    <p>I can’t wait to make more memories with you.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Background Hearts Generation
+        const bgContainer = document.getElementById('bg-hearts');
+        function createBgHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('bg-heart');
+            heart.innerHTML = '❤️';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = Math.random() * 10 + 10 + 's';
+            heart.style.fontSize = Math.random() * 20 + 20 + 'px';
+            bgContainer.appendChild(heart);
+            setTimeout(() => {
+                heart.remove();
+            }, 20000); // Clean up
+        }
+        setInterval(createBgHeart, 1000);
+
+        // Section Navigation
+        let currentSection = 1;
+        const totalSections = 5;
+
+        function nextSection(current) {
+            const currentEl = document.getElementById(`section-${current}`);
+            const nextEl = document.getElementById(`section-${current + 1}`);
+
+            if (nextEl) {
+                // Exit current
+                currentEl.classList.remove('active');
+                currentEl.classList.add('exiting');
+
+                // Enter next after small delay for smooth transition
+                setTimeout(() => {
+                    currentEl.style.display = 'none'; // Roughly hide it to prevent overlap issues
+                    currentEl.classList.remove('exiting'); // Reset state
+
+                    nextEl.style.display = 'flex';
+                    // Force reflow
+                    void nextEl.offsetWidth;
+                    nextEl.classList.add('active');
+                }, 800);
+            }
+        }
+
+        // Celebration Logic
+        function celebrate() {
+            const btn = document.querySelector('.btn-primary');
+            btn.style.transform = 'scale(1.2)';
+
+            // Show final message
+            document.getElementById('final-msg').classList.add('visible');
+
+            // Fire confetti
+            fireConfetti();
+        }
+
+        // Simple Confetti/Heart Particle System
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+
+        window.addEventListener('resize', () => {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        });
+
+        const particles = [];
+        const colors = ['#D32F2F', '#E57373', '#FFCDD2', '#FFEBEE', '#FF5252'];
+
+        class Particle {
+            constructor() {
+                this.x = width / 2; // Start from center (button location approx)
+                this.y = height * 0.7;
+                this.vx = (Math.random() - 0.5) * 10;
+                this.vy = (Math.random() - 1) * 15 - 5; // Upward burst
+                this.gravity = 0.2;
+                this.size = Math.random() * 15 + 10;
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.rotation = Math.random() * 360;
+                this.rotationSpeed = (Math.random() - 0.5) * 10;
+                this.shape = Math.random() > 0.5 ? 'heart' : 'circle';
+                this.opacity = 1;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.rotation += this.rotationSpeed;
+                this.opacity -= 0.005;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate((this.rotation * Math.PI) / 180);
+                ctx.globalAlpha = this.opacity;
+                ctx.fillStyle = this.color;
+
+                if (this.shape === 'heart') {
+                    // Draw heart
+                    ctx.beginPath();
+                    const topCurveHeight = this.size * 0.3;
+                    ctx.moveTo(0, topCurveHeight);
+                    ctx.bezierCurveTo(0, 0, -this.size / 2, 0, -this.size / 2, topCurveHeight);
+                    ctx.bezierCurveTo(-this.size / 2, this.size / 2, 0, this.size * 0.8, 0, this.size);
+                    ctx.bezierCurveTo(0, this.size * 0.8, this.size / 2, this.size / 2, this.size / 2, topCurveHeight);
+                    ctx.bezierCurveTo(this.size / 2, 0, 0, 0, 0, topCurveHeight);
+                    ctx.fill();
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.size / 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        let animationId;
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+
+                if (particles[i].opacity <= 0 || particles[i].y > height) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            if (particles.length > 0) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+
+        function fireConfetti() {
+            for (let i = 0; i < 100; i++) {
+                particles.push(new Particle());
+            }
+            if (!animationId) {
+                animate();
+            } else {
+                // Restart if already running but empty (though logic handles this)
+                // or just add to existing loop
+            }
+            // Ensure loop is running
+            cancelAnimationFrame(animationId);
+            animate();
+        }
+
+    </script>
+</body>
+
+</html>
